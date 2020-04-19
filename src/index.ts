@@ -5,6 +5,9 @@ import { VersionType, InputParams } from './types';
 import { getVersionTypeChangeFromTitle } from './getVersionTypeChangeFromTitle';
 import { deploy } from './deploy';
 import { isSuccessStatusCode } from './utils';
+import { addReview } from './review';
+import moment from 'moment-timezone';
+import { isWorkingHour } from './utils/isWorkingHour';
 
 const VERSION_TYPES = ['PATCH', 'MINOR', 'MAJOR'];
 const DEPENDABOT_BRANCH_PREFIX = 'dependabot-npm_and_yarn-';
@@ -15,8 +18,15 @@ const DEPENDABOT_LABEL = 'dependencies'
 const getInputParams = (): InputParams => {
   const deployDevDependencies = Boolean(core.getInput('deployDevDependencies'));
   const deployDependencies = Boolean(core.getInput('deployDependencies'));
-  const gitHubToken = core.getInput('gitHubToken') as string;
+  const gitHubToken = core.getInput('gitHubToken');
+  const deployOnlyInWorkingHours = Boolean(core.getInput('deployOnlyInWorkingHours'));
+  const timezone = core.getInput('timezone');
   const maxDeployVersion = core.getInput('maxDeployVersion').toUpperCase() as VersionType;
+
+  const isValidTimezone = moment.tz.zone(timezone);
+  if (isValidTimezone) {
+    throw new Error(`Unexpected input for timezone. Please check https://momentjs.com/timezone/ for list of valid timezones`);
+  }
 
   if (!VERSION_TYPES.includes(maxDeployVersion)) {
     throw new Error(`Unexpected input for maxDeployVersion ${maxDeployVersion}`);
@@ -27,6 +37,8 @@ const getInputParams = (): InputParams => {
     deployDependencies,
     gitHubToken,
     maxDeployVersion,
+    deployOnlyInWorkingHours,
+    timezone,
   };
 }
 
@@ -45,6 +57,16 @@ const shouldDeployVersion = (versionChangeType: VersionType, maxDeployVersion: V
   return versionIndex <= maxVersionIndex;
 }
 
+const isAllowedToDeployNow = (deployOnlyInWorkingHours: boolean, timezone: string) => {
+  if (!deployOnlyInWorkingHours) {
+    return true;
+  }
+
+  const now = moment.tz(timezone);
+
+  return isWorkingHour(now);
+}
+
 const run = async (payload: WebhookPayloadStatus): Promise<void> => {
   const input = getInputParams();
   const client = new GitHub(input.gitHubToken);
@@ -56,11 +78,11 @@ const run = async (payload: WebhookPayloadStatus): Promise<void> => {
 
   const isSuccess = payload.state === EXPECTED_CONCLUSION;
   if (!isSuccess) {
-    console.log('status is not success, skipping');
+    console.log('Status is not success, skipping');
     return;
   }
 
-  const branch = payload.branches.find(e => e.name.startsWith(DEPENDABOT_BRANCH_PREFIX));
+  const branch = payload.branches.find(e => shouldDeployBranch(e.name));
   if (!branch) {
     console.log('Branch for dependabot not found, skipping');
     return;
@@ -84,6 +106,8 @@ const run = async (payload: WebhookPayloadStatus): Promise<void> => {
     throw new Error('No PR returned');
   }
 
+  console.log(`Found PR ${pullRequest.number} for deploy`);
+
   const versionChangeType = getVersionTypeChangeFromTitle(pullRequest.title);
 
   if (!shouldDeployVersion(versionChangeType, input.maxDeployVersion)) {
@@ -97,7 +121,13 @@ const run = async (payload: WebhookPayloadStatus): Promise<void> => {
      return;
    }
 
-  await deploy(pullRequest.number, context, client);
+  await addReview(pullRequest.number, context, client);
+
+  if (isAllowedToDeployNow(input.deployOnlyInWorkingHours, input.timezone)) {
+    await deploy(pullRequest.number, context, client);  
+  } else {
+    console.log(`Skipping deploy outside of working hours`)
+  }
 }
 
 try {

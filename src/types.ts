@@ -5,4 +5,6 @@ export interface InputParams {
     deployDependencies: boolean;
     gitHubToken: string;
     maxDeployVersion: VersionType;
+    deployOnlyInWorkingHours: boolean;
+    timezone: string;
   }

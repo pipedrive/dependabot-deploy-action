@@ -30,6 +30,14 @@ GitHub token for current action.
 
 The maximum difference in version which should be auto-deployed. Allowed values `PATCH`, `MINOR`, `MAJOR`. Defaults to `MINOR`.
 
+#### deployOnlyInWorkingHours
+
+If true then deploy will be skipped if the PR is created outside of working hours". Default `true`
+
+#### timezone
+
+Timezone defined https://momentjs.com/timezone/ used to verify if the current time is within the working hours. Default Europe/Prague
+
 #### deployDevDependencies (TODO: So far not working)
 
 Sets if dev dependencies will be deployed automatically. Defaults to `true`.
