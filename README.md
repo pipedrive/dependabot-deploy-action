@@ -45,3 +45,18 @@ Sets if dev dependencies will be deployed automatically. Defaults to `true`.
 #### deployDependencies (TODO: So far not working)
 
 Sets if production dependencies will be deployed automatically. Defaults to `false`.
+
+### Development
+
+To install all dependencies run:
+
+```sh
+npm install
+```
+
+The package is built into single `dist/index.js` file which is part of the repository. It needs to be created manually before the commit by running:
+
+```sh
+# Run all tests and creates the build
+npm run publish
+```

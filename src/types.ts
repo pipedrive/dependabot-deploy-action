@@ -1,10 +1,10 @@
 export type VersionType = 'PATCH' | 'MINOR' | 'MAJOR';
 
 export interface InputParams {
-    deployDevDependencies: boolean;
-    deployDependencies: boolean;
-    gitHubToken: string;
-    maxDeployVersion: VersionType;
-    deployOnlyInWorkingHours: boolean;
-    timezone: string;
-  }
+  deployDevDependencies: boolean;
+  deployDependencies: boolean;
+  gitHubToken: string;
+  maxDeployVersion: VersionType;
+  deployOnlyInWorkingHours: boolean;
+  timezone: string;
+}

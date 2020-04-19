@@ -1,19 +1,19 @@
-import * as core from '@actions/core'
-import { GitHub, context } from '@actions/github'
-import { WebhookPayloadStatus } from '@octokit/webhooks'
+import * as core from '@actions/core';
+import { GitHub, context } from '@actions/github';
+import { WebhookPayloadStatus } from '@octokit/webhooks';
+import moment from 'moment-timezone';
 import { VersionType, InputParams } from './types';
 import { getVersionTypeChangeFromTitle } from './getVersionTypeChangeFromTitle';
 import { deploy } from './deploy';
 import { isSuccessStatusCode } from './utils';
 import { addReview } from './review';
-import moment from 'moment-timezone';
 import { isWorkingHour } from './utils/isWorkingHour';
 
 const VERSION_TYPES = ['PATCH', 'MINOR', 'MAJOR'];
 const DEPENDABOT_BRANCH_PREFIX = 'dependabot-npm_and_yarn-';
 const EXPECTED_CONCLUSION = 'success';
 const EXPECTED_CONTEXT = 'continuous-integration/codeship';
-const DEPENDABOT_LABEL = 'dependencies'
+const DEPENDABOT_LABEL = 'dependencies';
 
 const getInputParams = (): InputParams => {
   const deployDevDependencies = Boolean(core.getInput('deployDevDependencies'));
@@ -25,7 +25,9 @@ const getInputParams = (): InputParams => {
 
   const isValidTimezone = moment.tz.zone(timezone);
   if (isValidTimezone) {
-    throw new Error(`Unexpected input for timezone. Please check https://momentjs.com/timezone/ for list of valid timezones`);
+    throw new Error(
+      'Unexpected input for timezone. Please check https://momentjs.com/timezone/ for list of valid timezones',
+    );
   }
 
   if (!VERSION_TYPES.includes(maxDeployVersion)) {
@@ -40,22 +42,22 @@ const getInputParams = (): InputParams => {
     deployOnlyInWorkingHours,
     timezone,
   };
-}
+};
 
-const shouldDeployBranch = (branchName: string): boolean => {
-  return branchName.startsWith(DEPENDABOT_BRANCH_PREFIX);
-}
+const shouldDeployBranch = (branchName: string): boolean =>
+  branchName.startsWith(DEPENDABOT_BRANCH_PREFIX);
 
-const shouldDeployLabel = (labels: string[]): boolean => {
-  return labels.includes(DEPENDABOT_LABEL);
-}
+const shouldDeployLabel = (labels: string[]): boolean => labels.includes(DEPENDABOT_LABEL);
 
-const shouldDeployVersion = (versionChangeType: VersionType, maxDeployVersion: VersionType): boolean => {
+const shouldDeployVersion = (
+  versionChangeType: VersionType,
+  maxDeployVersion: VersionType,
+): boolean => {
   const versionIndex = VERSION_TYPES.indexOf(versionChangeType);
   const maxVersionIndex = VERSION_TYPES.indexOf(maxDeployVersion);
 
   return versionIndex <= maxVersionIndex;
-}
+};
 
 const isAllowedToDeployNow = (deployOnlyInWorkingHours: boolean, timezone: string) => {
   if (!deployOnlyInWorkingHours) {
@@ -65,7 +67,7 @@ const isAllowedToDeployNow = (deployOnlyInWorkingHours: boolean, timezone: strin
   const now = moment.tz(timezone);
 
   return isWorkingHour(now);
-}
+};
 
 const run = async (payload: WebhookPayloadStatus): Promise<void> => {
   const input = getInputParams();
@@ -82,7 +84,7 @@ const run = async (payload: WebhookPayloadStatus): Promise<void> => {
     return;
   }
 
-  const branch = payload.branches.find(e => shouldDeployBranch(e.name));
+  const branch = payload.branches.find((e) => shouldDeployBranch(e.name));
   if (!branch) {
     console.log('Branch for dependabot not found, skipping');
     return;
@@ -94,13 +96,13 @@ const run = async (payload: WebhookPayloadStatus): Promise<void> => {
     state: 'open',
     repo: context.repo.repo,
     owner: context.repo.owner,
-  })
+  });
 
   if (!isSuccessStatusCode(pullRequests.status)) {
     throw new Error('PRs could not be listed');
   }
 
-  const pullRequest = pullRequests.data.find(e => e.head.sha === branch.commit.sha)
+  const pullRequest = pullRequests.data.find((e) => e.head.sha === branch.commit.sha);
 
   if (!pullRequest) {
     throw new Error('No PR returned');
@@ -111,31 +113,32 @@ const run = async (payload: WebhookPayloadStatus): Promise<void> => {
   const versionChangeType = getVersionTypeChangeFromTitle(pullRequest.title);
 
   if (!shouldDeployVersion(versionChangeType, input.maxDeployVersion)) {
-      console.log(`Skipping deploy for version type ${versionChangeType}. Running with maxDeployVersion ${input.maxDeployVersion}`);
-      return;
-   }
+    console.log(
+      `Skipping deploy for version type ${versionChangeType}. Running with maxDeployVersion ${input.maxDeployVersion}`,
+    );
+    return;
+  }
 
-   const labels = pullRequest.labels.map(e => e.name);
-   if (!shouldDeployLabel(labels)) {
-     console.log(`Skipping deploy. PRs with Labels "${labels}" should not be deployed`);
-     return;
-   }
+  const labels = pullRequest.labels.map((e) => e.name);
+  if (!shouldDeployLabel(labels)) {
+    console.log(`Skipping deploy. PRs with Labels "${labels}" should not be deployed`);
+    return;
+  }
 
   await addReview(pullRequest.number, context, client);
 
   if (isAllowedToDeployNow(input.deployOnlyInWorkingHours, input.timezone)) {
-    await deploy(pullRequest.number, context, client);  
+    await deploy(pullRequest.number, context, client);
   } else {
-    console.log(`Skipping deploy outside of working hours`)
+    console.log('Skipping deploy outside of working hours');
   }
-}
+};
 
 try {
   if (context.eventName === 'status') {
     run(context.payload as WebhookPayloadStatus);
-  }
-  else {
-    console.log(`Not running for event ${context.eventName} and action ${context.action}`)
+  } else {
+    console.log(`Not running for event ${context.eventName} and action ${context.action}`);
   }
 } catch (error) {
   core.setFailed(error.message);
