@@ -15,7 +15,7 @@ jobs:
     name: Dependabot auto deploy dependencies
     steps:
       - name: Deploy
-        uses: lpastusz/dependabot-deploy-action@master
+        uses: pipedrive/dependabot-deploy-action@master
         with:
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 ```
