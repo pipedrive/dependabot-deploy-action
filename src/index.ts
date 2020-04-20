@@ -26,7 +26,7 @@ const getInputParams = (): InputParams => {
   const isValidTimezone = moment.tz.zone(timezone);
   if (isValidTimezone) {
     throw new Error(
-      'Unexpected input for timezone. Please check https://momentjs.com/timezone/ for list of valid timezones',
+      `Unexpected input ${timezone} for timezone. Please check https://momentjs.com/timezone/ for list of valid timezones`,
     );
   }
 
