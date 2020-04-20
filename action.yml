@@ -1,29 +1,29 @@
-name: "Dependabot Deploy"
-description: "Automatically deploys PRs made by dependabot"
+name: 'Dependabot Deploy'
+description: 'Automatically deploys PRs made by dependabot'
 inputs:
   gitHubToken:
-    description: "Github token for current Action"
+    description: 'Github token for current Action'
     required: true
   maxDeployVersion:
-    description: "The maximum difference in version which should be auto-deployed. `PATCH`, `MINOR`, `MAJOR`. Default `MINOR`"
+    description: 'The maximum difference in version which should be auto-deployed. `PATCH`, `MINOR`, `MAJOR`. Default `MINOR`'
     required: false
-    default: "MINOR"
+    default: 'MINOR'
   deployOnlyInWorkingHours:
-    description: "If true then deploy will be skipped if the PR is created outside of working hours". Default `true`"
+    description: 'If true then deploy will be skipped if the PR is created outside of working hours. Default `true`'
     required: false
     default: true
   timezone:
-    description: "Timezone defined https://momentjs.com/timezone/ used to verify if the current time is within the working hours. Default Europe/Prague"
+    description: 'Timezone defined https://momentjs.com/timezone/ used to verify if the current time is within the working hours. Default Europe/Prague'
     required: false
-    default: "Europe/Prague"
+    default: 'Europe/Prague'
   deployDevDependencies:
-    description: "If true then dev dependencies will be deployed automatically. Default `true`"
+    description: 'If true then dev dependencies will be deployed automatically. Default `true`'
     required: false
     default: true
   deployDependencies:
-    description: "If true then production dependencies will be deployed automatically, Default `false`"
+    description: 'If true then production dependencies will be deployed automatically, Default `false`'
     required: false
     default: false
 runs:
-  using: "node12"
-  main: "dist/index.js"
+  using: 'node12'
+  main: 'dist/index.js'
