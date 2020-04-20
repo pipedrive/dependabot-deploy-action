@@ -31787,7 +31787,7 @@ const getInputParams = () => {
     const timezone = Object(core.getInput)('timezone');
     const maxDeployVersion = Object(core.getInput)('maxDeployVersion').toUpperCase();
     const isValidTimezone = moment_timezone_default().tz.zone(timezone);
-    if (isValidTimezone) {
+    if (!isValidTimezone) {
         throw new Error(`Unexpected input ${timezone} for timezone. Please check https://momentjs.com/timezone/ for list of valid timezones`);
     }
     if (!VERSION_TYPES.includes(maxDeployVersion)) {

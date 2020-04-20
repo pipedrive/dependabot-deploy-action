@@ -24,7 +24,7 @@ const getInputParams = (): InputParams => {
   const maxDeployVersion = core.getInput('maxDeployVersion').toUpperCase() as VersionType;
 
   const isValidTimezone = moment.tz.zone(timezone);
-  if (isValidTimezone) {
+  if (!isValidTimezone) {
     throw new Error(
       `Unexpected input ${timezone} for timezone. Please check https://momentjs.com/timezone/ for list of valid timezones`,
     );
