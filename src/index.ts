@@ -9,8 +9,6 @@ import { isSuccessStatusCode } from './utils';
 import { addReview } from './review';
 import { isWorkingHour } from './utils/isWorkingHour';
 
-const GLOBAL_DISABLE: boolean = true;
-
 const VERSION_TYPES = ['PATCH', 'MINOR', 'MAJOR'];
 const DEPENDABOT_BRANCH_PREFIX = 'dependabot-npm_and_yarn-';
 const EXPECTED_CONCLUSION = 'success';
@@ -137,12 +135,10 @@ const run = async (payload: WebhookPayloadStatus): Promise<void> => {
 };
 
 try {
-  if (GLOBAL_DISABLE !== true) {
-    if (context.eventName === 'status') {
-      run(context.payload as WebhookPayloadStatus);
-    } else {
-      console.log(`Not running for event ${context.eventName} and action ${context.action}`);
-    }
+  if (context.eventName === 'status') {
+    run(context.payload as WebhookPayloadStatus);
+  } else {
+    console.log(`Not running for event ${context.eventName} and action ${context.action}`);
   }
 } catch (error) {
   core.setFailed(error.message);

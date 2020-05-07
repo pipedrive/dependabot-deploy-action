@@ -31774,7 +31774,6 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
 
 
 
-const GLOBAL_DISABLE = true;
 const VERSION_TYPES = ['PATCH', 'MINOR', 'MAJOR'];
 const DEPENDABOT_BRANCH_PREFIX = 'dependabot-npm_and_yarn-';
 const EXPECTED_CONCLUSION = 'success';
@@ -31868,13 +31867,11 @@ const run = (payload) => src_awaiter(void 0, void 0, void 0, function* () {
     }
 });
 try {
-    if (GLOBAL_DISABLE !== true) {
-        if (github.context.eventName === 'status') {
-            run(github.context.payload);
-        }
-        else {
-            console.log(`Not running for event ${github.context.eventName} and action ${github.context.action}`);
-        }
+    if (github.context.eventName === 'status') {
+        run(github.context.payload);
+    }
+    else {
+        console.log(`Not running for event ${github.context.eventName} and action ${github.context.action}`);
     }
 }
 catch (error) {
