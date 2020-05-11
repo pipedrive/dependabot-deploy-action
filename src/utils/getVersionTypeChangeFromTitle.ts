@@ -1,5 +1,5 @@
 import semver from 'semver-diff';
-import { VersionType } from './types';
+import { VersionType } from '../types';
 
 export const getVersionTypeChangeFromTitle = (title: string): VersionType => {
   const VERSIONS_REGEX = /[0-9.]+/g;
