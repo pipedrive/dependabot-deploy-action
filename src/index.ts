@@ -2,13 +2,16 @@ import * as core from '@actions/core';
 import { GitHub, context } from '@actions/github';
 import { WebhookPayloadStatus } from '@octokit/webhooks';
 import moment from 'moment-timezone';
-import { VersionType, InputParams } from './types';
-import { getVersionTypeChangeFromTitle } from './getVersionTypeChangeFromTitle';
+import { VersionType, InputParams, DeployDependencies } from './types';
+import { getVersionTypeChangeFromTitle } from './utils/getVersionTypeChangeFromTitle';
+import { isInProdDependencies, isInAnyDependencies } from './utils/packageJson';
 import { deploy } from './deploy';
 import { isSuccessStatusCode } from './utils';
 import { addReview } from './review';
 import { isWorkingHour } from './utils/isWorkingHour';
+import { getPackageNameFromTitle } from './utils/getPackageNameFromTitle';
 
+const DEPLOY_DEPENDENCIES = ['dev', 'all'];
 const VERSION_TYPES = ['PATCH', 'MINOR', 'MAJOR'];
 const DEPENDABOT_BRANCH_PREFIX = 'dependabot-npm_and_yarn-';
 const EXPECTED_CONCLUSION = 'success';
@@ -16,8 +19,7 @@ const EXPECTED_CONTEXT = 'continuous-integration/codeship';
 const DEPENDABOT_LABEL = 'dependencies';
 
 const getInputParams = (): InputParams => {
-  const deployDevDependencies = Boolean(core.getInput('deployDevDependencies'));
-  const deployDependencies = Boolean(core.getInput('deployDependencies'));
+  const deployDependencies = core.getInput('deployDependencies') as DeployDependencies;
   const gitHubToken = core.getInput('gitHubToken');
   const deployOnlyInWorkingHours = Boolean(core.getInput('deployOnlyInWorkingHours'));
   const timezone = core.getInput('timezone');
@@ -34,8 +36,11 @@ const getInputParams = (): InputParams => {
     throw new Error(`Unexpected input for maxDeployVersion ${maxDeployVersion}`);
   }
 
+  if (!DEPLOY_DEPENDENCIES.includes(deployDependencies)) {
+    throw new Error(`Unexpected input for deployDependencies ${deployDependencies}`);
+  }
+
   return {
-    deployDevDependencies,
     deployDependencies,
     gitHubToken,
     maxDeployVersion,
@@ -122,6 +127,18 @@ const run = async (payload: WebhookPayloadStatus): Promise<void> => {
   const labels = pullRequest.labels.map((e) => e.name);
   if (!shouldDeployLabel(labels)) {
     console.log(`Skipping deploy. PRs with Labels "${labels}" should not be deployed`);
+    return;
+  }
+
+  const packageName = getPackageNameFromTitle(pullRequest.title);
+
+  if (input.deployDependencies === 'dev' && isInProdDependencies(packageName)) {
+    console.log(`Skipping deploy. Package ${packageName} found in prod dependencies`);
+    return;
+  }
+
+  if (!isInAnyDependencies(packageName)) {
+    console.log(`Skipping deploy. Package ${packageName} not found in any dependencies`);
     return;
   }
 
