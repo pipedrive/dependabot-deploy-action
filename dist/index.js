@@ -31790,8 +31790,8 @@ const isWorkingHour = (datetime) => {
         return false;
     }
     const hour = datetime.hour();
-    if (hour < 8 || hour >= 16) {
-        console.log('isWorkingHour: false because it is out of the working hours (08-00 - 16:00)');
+    if (hour < 7 || hour >= 17) {
+        console.log('isWorkingHour: false because it is out of the working hours (07-00 - 16:59)');
         return false;
     }
     return true;

@@ -34,7 +34,7 @@ The maximum difference in version which should be auto-deployed. Allowed values 
 
 #### deployOnlyInWorkingHours
 
-If true then deploy will be skipped if the PR is created outside of working hours". Default `true`
+If true then deploy will be skipped if the PR is created outside of working hours". Default `true`. Working hours are defined as Monday-Friday 07:00 - 16:59
 
 #### timezone
 
