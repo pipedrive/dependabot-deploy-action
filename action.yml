@@ -13,7 +13,7 @@ inputs:
     required: false
     default: true
   timezone:
-    description: 'Timezone defined https://momentjs.com/timezone/ used to verify if the current time is within the working hours. Default Europe/Prague'
+    description: 'Timezone defined https://momentjs.com/timezone/ used to verify if the current time is within the working hours. Default `Europe/Prague`'
     required: false
     default: 'Europe/Prague'
   deployDevDependencies:
