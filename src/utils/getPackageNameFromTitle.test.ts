@@ -8,6 +8,7 @@ describe(getPackageNameFromTitle.name, () => {
     ],
     ['Bump husky from 4.2.3 to 4.2.5', 'husky'],
     ['Bump @types/relay-test-utils from 6.0.1 to 6.0.2', '@types/relay-test-utils'],
+    ['Bump   multipleSpaces   from 0.0.1 to 6.0.2', 'multipleSpaces'],
   ];
 
   const invalidCases = ['Bump kafka', 'Bump from 1.0.0 to 1.0.1', 'Invalid title'];

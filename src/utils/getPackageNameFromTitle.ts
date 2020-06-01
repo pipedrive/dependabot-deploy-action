@@ -4,5 +4,5 @@ export const getPackageNameFromTitle = (title: string): string => {
     throw new Error(`Package name could not be parsed from title ${title} by the regex`);
   }
 
-  return matched[1];
+  return matched[1].trim();
 };

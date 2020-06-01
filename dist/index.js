@@ -31803,7 +31803,7 @@ const getPackageNameFromTitle = (title) => {
     if (!matched || !matched[1]) {
         throw new Error(`Package name could not be parsed from title ${title} by the regex`);
     }
-    return matched[1];
+    return matched[1].trim();
 };
 
 // CONCATENATED MODULE: ./src/index.ts
