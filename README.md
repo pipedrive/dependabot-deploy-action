@@ -30,7 +30,7 @@ GitHub token for current action.
 
 #### maxDeployVersion
 
-The maximum difference in version which should be auto-deployed. Allowed values `PATCH`, `MINOR`, `MAJOR`. Defaults to `MINOR`.
+The maximum difference in version which should be auto-deployed. Allowed values `PATCH`, `MINOR`, `MAJOR`. Defaults to `MAJOR`.
 
 #### deployOnlyInWorkingHours
 

@@ -7,7 +7,7 @@ inputs:
   maxDeployVersion:
     description: 'The maximum difference in version which should be auto-deployed. `PATCH`, `MINOR`, `MAJOR`. Default `MINOR`'
     required: false
-    default: 'MINOR'
+    default: 'MAJOR'
   deployOnlyInWorkingHours:
     description: 'If true then deploy will be skipped if the PR is created outside of working hours. Default `true`'
     required: false
