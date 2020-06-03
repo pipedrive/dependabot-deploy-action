@@ -115,6 +115,25 @@ const run = async (payload: WebhookPayloadStatus): Promise<void> => {
 
   console.log(`Found PR ${pullRequest.number} for deploy`);
 
+  const listParams = {
+    pull_number: pullRequest.number,
+    repo: context.repo.repo,
+    owner: context.repo.owner,
+  };
+
+  const [commits, comments, reviews] = await Promise.all([
+    client.pulls.listCommits(listParams),
+    client.pulls.listComments(listParams),
+    client.pulls.listReviews(listParams),
+  ]);
+
+  if (commits.data.length > 1 || comments.data.length > 0 || reviews.data.length > 0) {
+    console.log(
+      `Found interaction with the PR. Skipping. Commits: ${commits.data.length}, Comments: ${comments.data.length}, Reviews: ${reviews.data.length}`,
+    );
+    return;
+  }
+
   const versionChangeType = getVersionTypeChangeFromTitle(pullRequest.title);
 
   if (!shouldDeployVersion(versionChangeType, input.maxDeployVersion)) {
