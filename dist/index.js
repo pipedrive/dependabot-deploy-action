@@ -31712,7 +31712,7 @@ var external_fs_default = /*#__PURE__*/__webpack_require__.n(external_fs_);
 // CONCATENATED MODULE: ./src/utils/packageJson.ts
 
 
-const getPath = () => __webpack_require__.ab + "dependabot-deploy-action/" + process.env.GITHUB_WORKSPACE + '/package.json';
+const getPath = () => Object(external_path_.join)(process.env.GITHUB_WORKSPACE, 'package.json').toString();
 const getPackageJson = () => JSON.parse(external_fs_default().readFileSync(getPath()).toString());
 const isInProdDependencies = (packageName) => {
     const { dependencies } = getPackageJson();
