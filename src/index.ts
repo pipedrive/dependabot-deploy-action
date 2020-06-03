@@ -134,6 +134,13 @@ const run = async (payload: WebhookPayloadStatus): Promise<void> => {
     return;
   }
 
+  if (!commits.data[0].commit.author.name.toLowerCase().startsWith('dependabot')) {
+    console.log(
+      `First commit not from dependabot. Commit author: ${commits.data[0].commit.author.name}`,
+    );
+    return;
+  }
+
   const versionChangeType = getVersionTypeChangeFromTitle(pullRequest.title);
 
   if (!shouldDeployVersion(versionChangeType, input.maxDeployVersion)) {

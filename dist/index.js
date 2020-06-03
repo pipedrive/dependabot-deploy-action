@@ -31916,6 +31916,10 @@ const run = (payload) => src_awaiter(void 0, void 0, void 0, function* () {
         console.log(`Found interaction with the PR. Skipping. Commits: ${commits.data.length}, Comments: ${comments.data.length}, Reviews: ${reviews.data.length}`);
         return;
     }
+    if (!commits.data[0].commit.author.name.toLowerCase().startsWith('dependabot')) {
+        console.log(`First commit not from dependabot. Commit author: ${commits.data[0].commit.author.name}`);
+        return;
+    }
     const versionChangeType = getVersionTypeChangeFromTitle(pullRequest.title);
     if (!shouldDeployVersion(versionChangeType, input.maxDeployVersion)) {
         console.log(`Skipping deploy for version type ${versionChangeType}. Running with maxDeployVersion ${input.maxDeployVersion}`);
