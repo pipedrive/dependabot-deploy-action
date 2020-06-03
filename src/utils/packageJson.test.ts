@@ -31,7 +31,7 @@ afterEach(() => {
   jest.resetModules();
 });
 
-describe(isInAnyDependencies.name, () => {
+describe(isInProdDependencies.name, () => {
   it('should return `true` if in dependencies', () => {
     const result = isInProdDependencies('prod-only');
     expect(result).toBe(true);
