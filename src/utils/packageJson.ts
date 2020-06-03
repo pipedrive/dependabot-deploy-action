@@ -1,4 +1,4 @@
-import { join } from 'path';
+import { resolve } from 'path';
 import fs from 'fs';
 
 export interface PackageJSON {
@@ -6,7 +6,7 @@ export interface PackageJSON {
   dependencies?: { [key: string]: string };
 }
 
-const getPath = () => join(process.env.GITHUB_WORKSPACE, 'package.json').toString();
+const getPath = () => resolve(process.env.GITHUB_WORKSPACE, 'package.json');
 
 const getPackageJson = () => JSON.parse(fs.readFileSync(getPath()).toString()) as PackageJSON;
 
