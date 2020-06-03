@@ -17,7 +17,7 @@ const emptyPackageJson = {};
 jest.mock('fs');
 
 beforeEach(() => {
-  const pathToGithubWorkspace = 'path/to/';
+  const pathToGithubWorkspace = '/path/to/';
   process.env = {
     GITHUB_WORKSPACE: pathToGithubWorkspace,
   };
