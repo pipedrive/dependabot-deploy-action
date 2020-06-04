@@ -3,15 +3,17 @@ import { isWorkingHour } from './isWorkingHour';
 
 describe(isWorkingHour.name, () => {
   const workingHours = [
-    moment('2020-04-17 08:00'),
-    moment('2020-04-17 15:59'),
-    moment('2020-04-17 08:00'),
+    moment('2020-04-17 07:00'),
+    moment('2020-04-17 16:59'),
+    moment('2020-04-17 07:00'),
   ];
 
   const notWorkingHours = [
-    moment('2020-04-18 08:00'),
-    moment('2020-04-18 15:59'),
-    moment('2020-04-18 08:00'),
+    moment('2020-04-18 07:00'),
+    moment('2020-04-18 16:59'),
+    moment('2020-04-18 07:00'),
+    moment('2020-04-17 06:59'),
+    moment('2020-04-17 17:00'),
   ];
 
   it.each(workingHours)('should return true', (datetime) => {

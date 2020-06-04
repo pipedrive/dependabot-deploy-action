@@ -1,8 +1,8 @@
 export type VersionType = 'PATCH' | 'MINOR' | 'MAJOR';
+export type DeployDependencies = 'dev' | 'all';
 
 export interface InputParams {
-  deployDevDependencies: boolean;
-  deployDependencies: boolean;
+  deployDependencies: DeployDependencies;
   gitHubToken: string;
   maxDeployVersion: VersionType;
   deployOnlyInWorkingHours: boolean;

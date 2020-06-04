@@ -4,7 +4,7 @@ A GitHub Action which allows to deploy Pipedrive services. Automatically approve
 
 ## Usage
 
-Create an yml file into `.github/workflows/<WORKFLOW_NAME>.yml` and merge into into your default branch (usually master).
+Create an yml file into `.github/workflows/<WORKFLOW_NAME>.yml` and merge into into your default branch (usually master). This action needs to contain the `checkout` action. This action uses it to verify if the package which is being updated is in dev/prod dependencies.
 
 ```yml
 on: [status]
@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     name: Dependabot auto deploy dependencies
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Deploy
         uses: pipedrive/dependabot-deploy-action@master
         with:
@@ -28,23 +30,19 @@ GitHub token for current action.
 
 #### maxDeployVersion
 
-The maximum difference in version which should be auto-deployed. Allowed values `PATCH`, `MINOR`, `MAJOR`. Defaults to `MINOR`.
+The maximum difference in version which should be auto-deployed. Allowed values `PATCH`, `MINOR`, `MAJOR`. Defaults to `MAJOR`.
 
 #### deployOnlyInWorkingHours
 
-If true then deploy will be skipped if the PR is created outside of working hours". Default `true`
+If true then deploy will be skipped if the PR is created outside of working hours". Default `true`. Working hours are defined as Monday-Friday 07:00 - 16:59
 
 #### timezone
 
-Timezone defined https://momentjs.com/timezone/ used to verify if the current time is within the working hours. Default Europe/Prague
+Timezone defined https://momentjs.com/timezone/ used to verify if the current time is within the working hours. Default `Europe/Prague`
 
-#### deployDevDependencies (TODO: So far not working)
+#### deployDependencies
 
-Sets if dev dependencies will be deployed automatically. Defaults to `true`.
-
-#### deployDependencies (TODO: So far not working)
-
-Sets if production dependencies will be deployed automatically. Defaults to `false`.
+Defines what dependencies should be deployed. Either `dev` or `all`. Default `dev`
 
 ### Development
 

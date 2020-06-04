@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(926);
+/******/ 		return __webpack_require__(929);
 /******/ 	};
 /******/ 	// initialize runtime
 /******/ 	runtime(__webpack_require__);
@@ -6762,6 +6762,22 @@ function register (state, name, method, options) {
         return registered.hook.bind(null, method, options)
       }, method)()
     })
+}
+
+
+/***/ }),
+
+/***/ 366:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+module.exports = hasNextPage
+
+const deprecate = __webpack_require__(370)
+const getPageLinks = __webpack_require__(577)
+
+function hasNextPage (link) {
+  deprecate(`octokit.hasNextPage() – You can use octokit.paginate or async iterators instead: https://github.com/octokit/rest.js#pagination.`)
+  return getPageLinks(link).next
 }
 
 
@@ -29393,7 +29409,7 @@ function paginationMethodsPlugin (octokit) {
   octokit.getPreviousPage = __webpack_require__(563).bind(null, octokit)
   octokit.hasFirstPage = __webpack_require__(536)
   octokit.hasLastPage = __webpack_require__(336)
-  octokit.hasNextPage = __webpack_require__(929)
+  octokit.hasNextPage = __webpack_require__(366)
   octokit.hasPreviousPage = __webpack_require__(558)
 }
 
@@ -31644,7 +31660,7 @@ exports.requestLog = requestLog;
 
 /***/ }),
 
-/***/ 926:
+/***/ 929:
 /***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -31664,7 +31680,7 @@ var moment_timezone_default = /*#__PURE__*/__webpack_require__.n(moment_timezone
 var semver_diff = __webpack_require__(104);
 var semver_diff_default = /*#__PURE__*/__webpack_require__.n(semver_diff);
 
-// CONCATENATED MODULE: ./src/getVersionTypeChangeFromTitle.ts
+// CONCATENATED MODULE: ./src/utils/getVersionTypeChangeFromTitle.ts
 
 const getVersionTypeChangeFromTitle = (title) => {
     const VERSIONS_REGEX = /[0-9.]+/g;
@@ -31684,6 +31700,31 @@ const getVersionTypeChangeFromTitle = (title) => {
         default:
             throw new Error(`Unexpected version change ${version} for title ${title}`);
     }
+};
+
+// EXTERNAL MODULE: external "path"
+var external_path_ = __webpack_require__(622);
+
+// EXTERNAL MODULE: external "fs"
+var external_fs_ = __webpack_require__(747);
+var external_fs_default = /*#__PURE__*/__webpack_require__.n(external_fs_);
+
+// CONCATENATED MODULE: ./src/utils/packageJson.ts
+
+
+const getPath = () => Object(external_path_.join)(process.env.GITHUB_WORKSPACE, 'package.json').toString();
+const getPackageJson = () => JSON.parse(external_fs_default().readFileSync(getPath()).toString());
+const isInProdDependencies = (packageName) => {
+    const { dependencies } = getPackageJson();
+    const isInProd = dependencies && packageName in dependencies;
+    return isInProd !== null && isInProd !== void 0 ? isInProd : false;
+};
+const isInAnyDependencies = (packageName) => {
+    var _a;
+    const { devDependencies, dependencies } = getPackageJson();
+    const isInDev = devDependencies && packageName in devDependencies;
+    const isInProd = dependencies && packageName in dependencies;
+    return (_a = (isInDev || isInProd)) !== null && _a !== void 0 ? _a : false;
 };
 
 // CONCATENATED MODULE: ./src/utils.ts
@@ -31749,11 +31790,20 @@ const isWorkingHour = (datetime) => {
         return false;
     }
     const hour = datetime.hour();
-    if (hour < 8 || hour >= 16) {
-        console.log('isWorkingHour: false because it is out of the working hours (08-00 - 16:00)');
+    if (hour < 7 || hour >= 17) {
+        console.log('isWorkingHour: false because it is out of the working hours (07-00 - 16:59)');
         return false;
     }
     return true;
+};
+
+// CONCATENATED MODULE: ./src/utils/getPackageNameFromTitle.ts
+const getPackageNameFromTitle = (title) => {
+    const matched = title.match(/Bump (.*?) from/);
+    if (!matched || !matched[1]) {
+        throw new Error(`Package name could not be parsed from title ${title} by the regex`);
+    }
+    return matched[1].trim();
 };
 
 // CONCATENATED MODULE: ./src/index.ts
@@ -31774,14 +31824,16 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
 
 
 
+
+
+const DEPLOY_DEPENDENCIES = ['dev', 'all'];
 const VERSION_TYPES = ['PATCH', 'MINOR', 'MAJOR'];
 const DEPENDABOT_BRANCH_PREFIX = 'dependabot-npm_and_yarn-';
 const EXPECTED_CONCLUSION = 'success';
 const EXPECTED_CONTEXT = 'continuous-integration/codeship';
 const DEPENDABOT_LABEL = 'dependencies';
 const getInputParams = () => {
-    const deployDevDependencies = Boolean(Object(core.getInput)('deployDevDependencies'));
-    const deployDependencies = Boolean(Object(core.getInput)('deployDependencies'));
+    const deployDependencies = Object(core.getInput)('deployDependencies');
     const gitHubToken = Object(core.getInput)('gitHubToken');
     const deployOnlyInWorkingHours = Boolean(Object(core.getInput)('deployOnlyInWorkingHours'));
     const timezone = Object(core.getInput)('timezone');
@@ -31793,8 +31845,10 @@ const getInputParams = () => {
     if (!VERSION_TYPES.includes(maxDeployVersion)) {
         throw new Error(`Unexpected input for maxDeployVersion ${maxDeployVersion}`);
     }
+    if (!DEPLOY_DEPENDENCIES.includes(deployDependencies)) {
+        throw new Error(`Unexpected input for deployDependencies ${deployDependencies}`);
+    }
     return {
-        deployDevDependencies,
         deployDependencies,
         gitHubToken,
         maxDeployVersion,
@@ -31848,6 +31902,24 @@ const run = (payload) => src_awaiter(void 0, void 0, void 0, function* () {
         throw new Error('No PR returned');
     }
     console.log(`Found PR ${pullRequest.number} for deploy`);
+    const listParams = {
+        pull_number: pullRequest.number,
+        repo: github.context.repo.repo,
+        owner: github.context.repo.owner,
+    };
+    const [commits, comments, reviews] = yield Promise.all([
+        client.pulls.listCommits(listParams),
+        client.pulls.listComments(listParams),
+        client.pulls.listReviews(listParams),
+    ]);
+    if (commits.data.length > 1 || comments.data.length > 0 || reviews.data.length > 0) {
+        console.log(`Found interaction with the PR. Skipping. Commits: ${commits.data.length}, Comments: ${comments.data.length}, Reviews: ${reviews.data.length}`);
+        return;
+    }
+    if (!commits.data[0].commit.author.name.toLowerCase().startsWith('dependabot')) {
+        console.log(`First commit not from dependabot. Commit author: ${commits.data[0].commit.author.name}`);
+        return;
+    }
     const versionChangeType = getVersionTypeChangeFromTitle(pullRequest.title);
     if (!shouldDeployVersion(versionChangeType, input.maxDeployVersion)) {
         console.log(`Skipping deploy for version type ${versionChangeType}. Running with maxDeployVersion ${input.maxDeployVersion}`);
@@ -31856,6 +31928,15 @@ const run = (payload) => src_awaiter(void 0, void 0, void 0, function* () {
     const labels = pullRequest.labels.map((e) => e.name);
     if (!shouldDeployLabel(labels)) {
         console.log(`Skipping deploy. PRs with Labels "${labels}" should not be deployed`);
+        return;
+    }
+    const packageName = getPackageNameFromTitle(pullRequest.title);
+    if (input.deployDependencies === 'dev' && isInProdDependencies(packageName)) {
+        console.log(`Skipping deploy. Package ${packageName} found in prod dependencies`);
+        return;
+    }
+    if (!isInAnyDependencies(packageName)) {
+        console.log(`Skipping deploy. Package ${packageName} not found in any dependencies`);
         return;
     }
     yield addReview(pullRequest.number, github.context, client);
@@ -31876,22 +31957,6 @@ try {
 }
 catch (error) {
     Object(core.setFailed)(error.message);
-}
-
-
-/***/ }),
-
-/***/ 929:
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-module.exports = hasNextPage
-
-const deprecate = __webpack_require__(370)
-const getPageLinks = __webpack_require__(577)
-
-function hasNextPage (link) {
-  deprecate(`octokit.hasNextPage() – You can use octokit.paginate or async iterators instead: https://github.com/octokit/rest.js#pagination.`)
-  return getPageLinks(link).next
 }
 
 
