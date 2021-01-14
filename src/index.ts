@@ -13,7 +13,7 @@ import { getPackageNameFromTitle } from './utils/getPackageNameFromTitle';
 
 const DEPLOY_DEPENDENCIES = ['dev', 'all'];
 const VERSION_TYPES = ['PATCH', 'MINOR', 'MAJOR'];
-const DEPENDABOT_BRANCH_PREFIX = 'dependabot-npm_and_yarn-';
+const DEPENDABOT_BRANCH_PREFIX = 'dependabot';
 const EXPECTED_CONCLUSION = 'success';
 const EXPECTED_CONTEXT = 'continuous-integration/codeship';
 const DEPENDABOT_LABEL = 'dependencies';
